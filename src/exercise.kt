@@ -1,6 +1,8 @@
 import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.*
+import kotlin.collections.LinkedHashMap
 
 class OrdersAnalyzer {
 
@@ -11,29 +13,17 @@ class OrdersAnalyzer {
         return sum
     }
 
-    private fun setWeek(): LinkedHashMap<DayOfWeek, Int> {
-        val map = LinkedHashMap<DayOfWeek, Int>()
-        for (i in 1..7) {
-            when (i) {
-                1 -> map[DayOfWeek.MONDAY] = 0
-                2 -> map[DayOfWeek.TUESDAY] = 0
-                3 -> map[DayOfWeek.WEDNESDAY] = 0
-                4 -> map[DayOfWeek.THURSDAY] = 0
-                5 -> map[DayOfWeek.FRIDAY] = 0
-                6 -> map[DayOfWeek.SATURDAY] = 0
-                7 -> map[DayOfWeek.SUNDAY] = 0
-            }
-        }
-        return map
-    }
 
     data class Order(val orderId: Int, val creationDate: LocalDateTime, val orderLines: List<OrderLine>)
 
     data class OrderLine(val productId: Int, val name: String, val quantity: Int, val unitPrice: BigDecimal)
 
-    fun totalDailySales(orders: List<Order>): Map<DayOfWeek, Int> {
+    inline fun <reified K : Enum<K>, V> mapEnumTo(values: List<V>): EnumMap<K, V> {
+        return enumValues<K>().zip(values).toMap(EnumMap(K::class.java))
+    }
 
-        val map = setWeek()
+    fun totalDailySales(orders: List<Order>): Map<DayOfWeek, Int> {
+        val map = mapEnumTo<DayOfWeek, Int>(listOf(0,0,0,0,0,0,0))
         orders.forEach { order ->
             val sum = order.sumQuantity()
             when (order.creationDate.dayOfWeek) {
