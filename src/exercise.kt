@@ -8,25 +8,11 @@ class OrdersAnalyzer {
     private fun Order.sumQuantity(): Int {
         var sum = 0
         orderLines.forEach { sum += it.quantity }
-        //println("sumQuantity is $sum")
         return sum
     }
 
-
-    data class Order(val orderId: Int, val creationDate: LocalDateTime, val orderLines: List<OrderLine>)
-
-    data class OrderLine(val productId: Int, val name: String, val quantity: Int, val unitPrice: BigDecimal)
-
-    /*
-    1.  returns a map with a DayOfWeek as a key and the sum of ordered quantity for all products, as a value.
-    2.  The method should always return a map. If there are no orders for some weekdays,
-        then skip this day entry in the map.
-     */
-    fun totalDailySales(orders: List<Order>): Map<DayOfWeek, Int> {
+    private fun setWeek(): LinkedHashMap<DayOfWeek, Int> {
         val map = LinkedHashMap<DayOfWeek, Int>()
-
-        /*
-        adds blank days but working
         for (i in 1..7) {
             when (i) {
                 1 -> map[DayOfWeek.MONDAY] = 0
@@ -38,33 +24,34 @@ class OrdersAnalyzer {
                 7 -> map[DayOfWeek.SUNDAY] = 0
             }
         }
-        */
+        return map
+    }
 
+    data class Order(val orderId: Int, val creationDate: LocalDateTime, val orderLines: List<OrderLine>)
 
+    data class OrderLine(val productId: Int, val name: String, val quantity: Int, val unitPrice: BigDecimal)
+
+    fun totalDailySales(orders: List<Order>): Map<DayOfWeek, Int> {
+
+        val map = setWeek()
         orders.forEach { order ->
             val sum = order.sumQuantity()
             when (order.creationDate.dayOfWeek) {
-                DayOfWeek.MONDAY -> map[DayOfWeek.MONDAY] = sum
-                DayOfWeek.TUESDAY -> map[DayOfWeek.TUESDAY] = sum
-                DayOfWeek.WEDNESDAY -> map[DayOfWeek.WEDNESDAY] = sum
-                DayOfWeek.THURSDAY -> map[DayOfWeek.THURSDAY] = sum
-                DayOfWeek.FRIDAY -> map[DayOfWeek.FRIDAY] = sum
-                DayOfWeek.SATURDAY -> map[DayOfWeek.SATURDAY] = sum
-                DayOfWeek.SUNDAY -> map[DayOfWeek.SUNDAY] = sum
+                DayOfWeek.MONDAY -> map[DayOfWeek.MONDAY] = map[DayOfWeek.MONDAY]!!.plus(sum)
+                DayOfWeek.TUESDAY -> map[DayOfWeek.TUESDAY] = map[DayOfWeek.TUESDAY]!!.plus(sum)
+                DayOfWeek.WEDNESDAY -> map[DayOfWeek.WEDNESDAY] = map[DayOfWeek.WEDNESDAY]!!.plus(sum)
+                DayOfWeek.THURSDAY -> map[DayOfWeek.THURSDAY] = map[DayOfWeek.THURSDAY]!!.plus(sum)
+                DayOfWeek.FRIDAY -> map[DayOfWeek.FRIDAY] = map[DayOfWeek.FRIDAY]!!.plus(sum)
+                DayOfWeek.SATURDAY -> map[DayOfWeek.SATURDAY] = map[DayOfWeek.SATURDAY]!!.plus(sum)
+                DayOfWeek.SUNDAY -> map[DayOfWeek.SUNDAY] = map[DayOfWeek.SUNDAY]!!.plus(sum)
                 else -> {
                     println("DayOfWeek entered wasn't listed in the bible :p")
                 }
             }
         }
-
-//        map.toSortedMap(kotlin.Comparator { a, b ->
-//            when {
-//                (a.value > b.value) -> 1
-//                (a.value < b.value) -> 1
-//                else -> 0
-//            }
-//        })
-
+        with(map.iterator()) {
+            forEach { if (it.value < 1) remove() }
+        }
         return map
     }
 }
@@ -82,7 +69,7 @@ fun main() {
     val order2 = OrdersAnalyzer.Order(555, LocalDateTime.parse("2017-03-25T11:24:20"), orderLineList2)
 
     val orderLine4 = OrdersAnalyzer.OrderLine(5723, "Pen", 4, BigDecimal.valueOf(4.22))
-    val orderLine5 = OrdersAnalyzer.OrderLine(9872, "Pencil", 4, BigDecimal.valueOf(3.12))
+    val orderLine5 = OrdersAnalyzer.OrderLine(9872, "Pencil", 3, BigDecimal.valueOf(3.12))
     val orderLine6 = OrdersAnalyzer.OrderLine(1746, "Erasers Set", 1, BigDecimal.valueOf(6.15))
     val orderLineList3 = listOf(orderLine4, orderLine5, orderLine6)
     val order3 = OrdersAnalyzer.Order(453, LocalDateTime.parse("2017-03-27T14:53:12"), orderLineList3)
